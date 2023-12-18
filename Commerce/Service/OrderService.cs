@@ -15,19 +15,23 @@ namespace Commerce.Service
 
         public async Task<string> AddOrder(Order order)
         {
-            await _context.Orders.AddAsync(order);
-            return "Order added Successfully";
+            try
+            {
+                await _context.Orders.AddAsync(order);
+                await _context.SaveChangesAsync();
+                return "Order added Successfully";
+            }
+            catch (Exception ex)
+            {
+                return $"{ex.InnerException.Message}";
+            }
         }
 
-        public string DeleteOrder(Guid Orderid)
+        public async  Task<string> DeleteOrder(Order ord)
         {
-            Console.WriteLine("Enter OrderId");
-            var str =Console.ReadLine();
-            if (str != null)
-            {
-                return "Order Deleted Successfully";
-            }
-            return "OrderId Does not exist";
+              _context.Orders.Remove(ord);
+            await _context.SaveChangesAsync();
+            return "Order deleted successfully";
         }
 
         public async Task<Order> GetOrderById(Guid OrderId)
@@ -36,14 +40,20 @@ namespace Commerce.Service
 
         }
 
+        public Task<List<Order>> GetOrderByUserId(Guid UserId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<List<Order>> GetOrders()
         {
            return await _context.Orders.ToListAsync();
         }
 
-        public string UpdateOrder(Order order)
+        public async Task<string> UpdateOrder(Order order)
         {
-            _context.Orders.Update(order);
+            /*await _context.Orders.Update(order);*/
+            await _context.SaveChangesAsync();
             return "Order Successfully updated";
         }
     }

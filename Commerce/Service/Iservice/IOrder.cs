@@ -7,7 +7,8 @@ namespace Commerce.Service.Iservice
         Task<List<Order>> GetOrders();
         Task<Order> GetOrderById(Guid Orderid);
         Task<string> AddOrder(Order order);
-        string UpdateOrder(Order order);
-        string DeleteOrder(Guid Orderid);
+        Task<string> UpdateOrder(Order order);
+        Task<string> DeleteOrder(Order ord);
+        Task<List<Order>> GetOrderByUserId(Guid UserId);
     }
 }

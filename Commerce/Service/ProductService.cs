@@ -1,5 +1,6 @@
 ﻿using Commerce.Data;
 using Commerce.Models;
+using Commerce.Models.Dto;
 using Commerce.Service.Iservice;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,20 +16,33 @@ namespace Commerce.Service
 
         public async Task<string> AddProduct(Product product)
         {
-            await _context.Products.AddAsync(product);
-            return "Product Added Successfully";
+            try
+            {
+                await _context.Products.AddAsync(product);
+                await _context.SaveChangesAsync();
+                return "Product Added Successfully";
+            }
+            catch (Exception ex) 
+            
+            {
+                //Console.WriteLine();
+                return $"{ex.InnerException.Message}";
+            }
 
         }
 
-        public string DeleteProduct(Guid ProductId)
+        public async Task<string> DeleteProduct(Product pro)
         {
-            Console.WriteLine("Enter Product Id");
+            _context.Products.Remove(pro);
+            await _context.SaveChangesAsync();
+            return "Product deleted successfully";
+            /*Console.WriteLine("Enter Product Id");
             var Str = Console.ReadLine();
             if (Str != null)
             {
                 return "Product deleted Successfully";
             }
-            return "Product ID does not exist";
+            return "Product ID does not exist";*/
 
         }
 
@@ -37,15 +51,45 @@ namespace Commerce.Service
             return await _context.Products.ToListAsync();
         }
 
-        public Task<Product> GetProductById(Guid ProductId)
+        public async Task<List<Product>> GetPaginatedProducts(int page, int pageSize)
         {
-            return _context.Products.Where(x => x. ProductId == ProductId).FirstOrDefaultAsync();
+            return await _context.Products
+                                 .OrderBy(p => p.ProductName) // or any other ordering
+                                 .Skip((page - 1) * pageSize)
+                                 .Take(pageSize)
+                                 .ToListAsync();
         }
 
-        public string UpdateProduct(Product product)
+        public async Task<int> GetTotalProductCount()
         {
-            _context.Products.Add(product);
+            return await _context.Products.CountAsync();
+        }
+
+
+        public async Task<Product> GetProductById(Guid ProductId)
+        {
+            return  await _context.Products.Where(x => x. ProductId == ProductId).FirstOrDefaultAsync();
+        }
+
+        public async Task<string> UpdateProduct(Product product)
+        {
+            /*_context.Products.Add(product);*/
+            await _context.SaveChangesAsync();
             return "Product updated Successfully";
+        }
+        //filtering
+        public async Task<List<Product>> FilterProducts(string ProductName, int? Price)
+        {
+           var query= _context.Products.AsQueryable();
+            if(!string.IsNullOrEmpty(ProductName))
+            {
+                query = query.Where(p => p.ProductName.Contains(ProductName));
+            }
+            if(Price != null)
+            {
+                query=query.Where(p=> p.Price != Price);
+            }
+            return await query.ToListAsync();
         }
     }
 }

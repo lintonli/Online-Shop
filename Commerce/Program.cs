@@ -1,4 +1,5 @@
 using Commerce.Data;
+using Commerce.Extensions;
 using Commerce.Service;
 using Commerce.Service.Iservice;
 using Microsoft.EntityFrameworkCore;
@@ -16,8 +17,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     {
         options.UseSqlServer(builder.Configuration.GetConnectionString("myconnection"));
     });
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IProduct,ProductService>();
 builder.Services.AddScoped<IOrder,OrderService>();
+builder.Services.AddScoped<IUser,UserService>();
+builder.Services.AddScoped<IJwt,JwtService>();
+
+builder.AddSwaggenGenExtension();
+
+builder.AddAuth();
+builder.AddAdminPolicy();
 
 var app = builder.Build();
 
@@ -29,6 +38,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
